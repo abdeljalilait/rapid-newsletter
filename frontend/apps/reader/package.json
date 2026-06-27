@@ -1,0 +1,19 @@
+{
+  "name": "@rapid/reader",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev --host 127.0.0.1 --port 4321",
+    "build": "astro check && astro build",
+    "typecheck": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/node": "^9",
+    "@rapid/api-client": "workspace:*",
+    "astro": "^5.0.8",
+    "htmx.org": "^2.0.4",
+    "typescript": "^5.7.2"
+  }
+}

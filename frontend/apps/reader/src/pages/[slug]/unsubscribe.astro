@@ -1,0 +1,35 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getWorkspace } from "../../lib/api";
+
+const slug = Astro.params.slug!;
+const workspace = await getWorkspace(slug);
+---
+<BaseLayout title={`Unsubscribe · ${workspace.name}`}>
+  <main class="container" style="padding: 56px 0; max-width: 680px;">
+    <h1>Unsubscribe from {workspace.name}</h1>
+    <p class="muted">Enter your email address to stop receiving this newsletter.</p>
+    <form class="subscribe-form" data-unsubscribe-form data-slug={slug} style="margin-top: 24px;">
+      <input name="email" type="email" required placeholder="reader@example.com" aria-label="Email" />
+      <button type="submit">Unsubscribe</button>
+      <p class="muted" data-message style="grid-column: 1 / -1; margin: 0;"></p>
+    </form>
+  </main>
+  <script type="module">
+    document.querySelectorAll("[data-unsubscribe-form]").forEach((form) => {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const target = event.currentTarget;
+        if (!(target instanceof HTMLFormElement)) return;
+        const message = target.querySelector("[data-message]");
+        const data = new FormData(target);
+        const response = await fetch(`${import.meta.env.PUBLIC_API_URL ?? "http://localhost:5120"}/api/public/${target.dataset.slug}/unsubscribe`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: data.get("email") })
+        });
+        if (message) message.textContent = response.ok ? "You have been unsubscribed." : "We could not find that subscription.";
+      });
+    });
+  </script>
+</BaseLayout>

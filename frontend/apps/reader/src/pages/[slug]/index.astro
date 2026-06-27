@@ -1,0 +1,37 @@
+---
+import NewsletterShell from "../../components/NewsletterShell.astro";
+import PostCard from "../../components/PostCard.astro";
+import SubscribeForm from "../../components/SubscribeForm.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPlans, getPosts, getWorkspace } from "../../lib/api";
+
+const slug = Astro.params.slug!;
+const [workspace, posts, plans] = await Promise.all([getWorkspace(slug), getPosts(slug), getPlans(slug)]);
+if (!workspace) return Astro.redirect("/");
+---
+<BaseLayout title={workspace.name}>
+  <NewsletterShell workspace={workspace} />
+  <main class="container">
+    <section class="cta-bar" style="position: static; width: auto; margin: 0 0 32px;">
+      <SubscribeForm slug={slug} />
+    </section>
+    <section style="margin: 36px 0;">
+      <h2>Latest posts</h2>
+      <div class="post-grid">
+        {posts.map((post) => <PostCard slug={slug} post={post} />)}
+      </div>
+    </section>
+    <section style="margin: 48px 0;">
+      <h2>Plans</h2>
+      <div class="post-grid">
+        {plans.map((plan) => (
+          <article class="post-card">
+            <h3>{plan.name}</h3>
+            <p class="muted">{plan.description}</p>
+            <strong>{plan.currency} {plan.price}</strong>
+          </article>
+        ))}
+      </div>
+    </section>
+  </main>
+</BaseLayout>

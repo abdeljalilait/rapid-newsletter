@@ -1,0 +1,17 @@
+---
+import PostCard from "../../components/PostCard.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPosts, getWorkspace } from "../../lib/api";
+
+const slug = Astro.params.slug!;
+const [workspace, posts] = await Promise.all([getWorkspace(slug), getPosts(slug)]);
+if (!workspace) return Astro.redirect("/");
+---
+<BaseLayout title={`${workspace.name} archive`}>
+  <main class="container" style="padding: 56px 0;">
+    <h1>{workspace.name} archive</h1>
+    <div class="post-grid">
+      {posts.map((post) => <PostCard slug={slug} post={post} />)}
+    </div>
+  </main>
+</BaseLayout>

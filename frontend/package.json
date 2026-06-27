@@ -1,0 +1,14 @@
+{
+  "name": "rapid-newsletter-frontend",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "dev:admin": "pnpm --filter @rapid/admin dev",
+    "dev:reader": "pnpm --filter @rapid/reader dev"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

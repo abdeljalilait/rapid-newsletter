@@ -1,0 +1,41 @@
+---
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+---
+<form class="subscribe-form" data-subscribe-form data-slug={slug}>
+  <div style="display: flex; gap: 8px; grid-column: 1 / -1;">
+    <input name="firstName" type="text" placeholder="First name" aria-label="First name" style="flex: 1;" />
+    <input name="lastName" type="text" placeholder="Last name" aria-label="Last name" style="flex: 1;" />
+  </div>
+  <input name="email" type="email" required placeholder="reader@example.com" aria-label="Email" />
+  <button type="submit">Subscribe</button>
+  <p class="muted" data-message style="grid-column: 1 / -1; margin: 0;"></p>
+</form>
+<script>
+  document.querySelectorAll("[data-subscribe-form]").forEach((form) => {
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const target = event.currentTarget;
+      if (!(target instanceof HTMLFormElement)) return;
+      const message = target.querySelector("[data-message]");
+      const data = new FormData(target);
+      const body = {
+        email: data.get("email"),
+        firstName: data.get("firstName") || null,
+        lastName: data.get("lastName") || null
+      };
+      const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:5120";
+      const response = await fetch(`${apiUrl}/api/public/${target.dataset.slug}/subscribe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      if (message) {
+        message.textContent = response.ok ? "You're subscribed!" : "Subscription failed. Try again.";
+      }
+    });
+  });
+</script>

@@ -1,0 +1,15 @@
+---
+import type { PostDto } from "@rapid/api-client";
+
+interface Props {
+  slug: string;
+  post: PostDto;
+}
+
+const { slug, post } = Astro.props;
+---
+<a class="post-card" href={`/${slug}/post/${post.id}`}>
+  <p class="muted">{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : "Draft"}</p>
+  <h2>{post.title}</h2>
+  {post.previewText && <p class="muted">{post.previewText}</p>}
+</a>

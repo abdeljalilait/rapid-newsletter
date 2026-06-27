@@ -1,0 +1,128 @@
+:root {
+  color-scheme: dark;
+  --bg: #0f0e17;
+  --panel: rgba(255, 255, 255, 0.07);
+  --text: #faf8f5;
+  --muted: #bdb7ae;
+  --accent: #e6a817;
+  --highlight: #ff8906;
+  --border: rgba(250, 248, 245, 0.16);
+  font-family: Inter, system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+a {
+  color: inherit;
+}
+
+.container {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.reader-nav,
+.reader-footer {
+  border-bottom: 1px solid var(--border);
+  padding: 18px 0;
+}
+
+.reader-footer {
+  border-top: 1px solid var(--border);
+  border-bottom: 0;
+  margin-top: 72px;
+  color: var(--muted);
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand-title,
+h1,
+h2,
+h3 {
+  font-family: "Playfair Display", Georgia, serif;
+}
+
+.newsletter-header {
+  padding: 56px 0 32px;
+}
+
+.newsletter-header h1 {
+  font-size: clamp(42px, 7vw, 82px);
+  line-height: 1;
+  margin: 0 0 18px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.post-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.post-card {
+  min-height: 190px;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  backdrop-filter: blur(12px);
+  text-decoration: none;
+  transition: transform 160ms ease, border-color 160ms ease;
+}
+
+.post-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+}
+
+.article {
+  width: min(780px, calc(100% - 32px));
+  margin: 56px auto;
+  font-size: 1.08rem;
+  line-height: 1.8;
+}
+
+.cta-bar {
+  position: sticky;
+  bottom: 16px;
+  width: min(760px, calc(100% - 32px));
+  margin: 32px auto 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(15, 14, 23, 0.92);
+  padding: 12px;
+}
+
+.subscribe-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+input,
+button {
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  padding: 11px 12px;
+  font: inherit;
+}
+
+button {
+  background: linear-gradient(135deg, var(--accent), var(--highlight));
+  color: #120f09;
+  font-weight: 700;
+  cursor: pointer;
+}

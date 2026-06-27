@@ -1,0 +1,24 @@
+# Backend
+backend/**/bin/
+backend/**/obj/
+backend/**/TestResults/
+*.user
+*.suo
+backend/.vshome/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+
+# IDE
+.vs/
+.idea/
+*.swp
+
+# Misc
+.DS_Store
+*.log
+.env
+.agents
+.codex

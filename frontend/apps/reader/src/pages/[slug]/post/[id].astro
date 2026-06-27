@@ -1,0 +1,33 @@
+---
+import SubscribeForm from "../../../components/SubscribeForm.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getPost, getWorkspace } from "../../../lib/api";
+
+const slug = Astro.params.slug!;
+const id = Astro.params.id!;
+const [workspace, post] = await Promise.all([getWorkspace(slug), getPost(slug, id)]);
+
+if (!workspace) return Astro.redirect("/");
+if (!post) return Astro.redirect(`/${slug}/archive`);
+---
+<BaseLayout title={`${post.title} · ${workspace.name}`}>
+  <article class="article">
+    <p class="muted"><a href={`/${slug}`}>{workspace.name}</a></p>
+    <h1>{post.title}</h1>
+    {post.subtitle && <p class="muted">{post.subtitle}</p>}
+    {post.coverImageUrl && <img src={post.coverImageUrl} alt="" style="width: 100%; border-radius: 8px; margin: 24px 0;" />}
+    {
+      post.renderedHtml
+        ? <div set:html={post.renderedHtml} />
+        : <p>{post.previewText || "No content available."}</p>
+    }
+    {post.publishedAt && (
+      <p class="muted" style="margin-top: 32px;">
+        Published {new Date(post.publishedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+      </p>
+    )}
+  </article>
+  <aside class="cta-bar">
+    <SubscribeForm slug={slug} />
+  </aside>
+</BaseLayout>
