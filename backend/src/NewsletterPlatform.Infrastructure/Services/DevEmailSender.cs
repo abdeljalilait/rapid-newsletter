@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace NewsletterPlatform.Infrastructure.Services;
 
-public class DevEmailSender : IEmailSender
+public sealed class DevEmailSender : IEmailSender
 {
     private readonly ILogger<DevEmailSender> _logger;
     public DevEmailSender(ILogger<DevEmailSender> logger) => _logger = logger;

@@ -60,7 +60,13 @@ export enum CampaignStatus {
 
 export enum EmailProvider {
   Resend = 0,
-  Mailtrap = 1
+  Mailtrap = 1,
+  Sender = 2,
+  Brevo = 3,
+  Mailjet = 4,
+  Mailgun = 5,
+  Loops = 6,
+  Smtp2Go = 7
 }
 
 export interface AuthResponse {
@@ -164,6 +170,7 @@ export interface ProviderAccountDto {
   lastSuccessfulSendAt?: string | null;
   lastError?: string | null;
   hasApiKey: boolean;
+  hasApiSecret: boolean;
 }
 
 export interface PostDto {

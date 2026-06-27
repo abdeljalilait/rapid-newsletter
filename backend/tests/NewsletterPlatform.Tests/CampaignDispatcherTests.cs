@@ -33,14 +33,14 @@ public sealed class CampaignDispatcherTests
 
         Assert.Null(launch!.Error);
 
-        var emailSender = new FakeEmailSender();
-        var dispatcher = CreateDispatcher(db, repo, emailSender);
+        var factory = new FakeEmailProviderFactory();
+        var dispatcher = CreateDispatcher(db, repo, factory);
 
         await dispatcher.DispatchPendingCampaignsAsync();
 
         var recipients = await db.CampaignRecipients.Where(r => r.CampaignId == campaign.Id).ToArrayAsync();
         Assert.All(recipients, r => Assert.Equal(CampaignRecipientStatus.Sent, r.Status));
-        Assert.Equal(3, emailSender.SentEmails.Count);
+        Assert.Equal(3, factory.SentEmails.Count);
 
         var updatedCampaign = await db.Campaigns.SingleAsync(c => c.Id == campaign.Id);
         Assert.Equal(CampaignStatus.Completed, updatedCampaign.Status);
@@ -64,10 +64,10 @@ public sealed class CampaignDispatcherTests
 
         Assert.Null(launch!.Error);
 
-        var emailSender = new FakeEmailSender();
-        emailSender.SetFailureFor("reader2@example.com");
+        var factory = new FakeEmailProviderFactory();
+        factory.SetFailureFor("reader2@example.com");
 
-        var dispatcher = CreateDispatcher(db, repo, emailSender);
+        var dispatcher = CreateDispatcher(db, repo, factory);
         await dispatcher.DispatchPendingCampaignsAsync();
 
         var recipients = await db.CampaignRecipients.Where(r => r.CampaignId == campaign.Id).ToArrayAsync();
@@ -87,12 +87,12 @@ public sealed class CampaignDispatcherTests
         SeedSubscribers(db, workspaceId, 2);
         await db.SaveChangesAsync();
 
-        var emailSender = new FakeEmailSender();
-        var dispatcher = CreateDispatcher(db, CreateRepository(db), emailSender);
+        var factory = new FakeEmailProviderFactory();
+        var dispatcher = CreateDispatcher(db, CreateRepository(db), factory);
 
         await dispatcher.DispatchPendingCampaignsAsync();
 
-        Assert.Empty(emailSender.SentEmails);
+        Assert.Empty(factory.SentEmails);
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public sealed class CampaignDispatcherTests
     {
         await using var db = CreateDb();
         var workspaceId = Guid.NewGuid();
-        var campaign = SeedCampaign(db, workspaceId, CampaignStatus.Preparing, scheduledAt: DateTime.UtcNow.AddHours(1));
+        var campaign = SeedCampaign(db, workspaceId, CampaignStatus.Draft, scheduledAt: DateTime.UtcNow.AddHours(1));
         var provider = SeedProvider(db, workspaceId, "Primary");
         SeedSubscribers(db, workspaceId, 2);
         await db.SaveChangesAsync();
@@ -111,12 +111,12 @@ public sealed class CampaignDispatcherTests
             AllowPartialCampaign: false));
         await db.SaveChangesAsync();
 
-        var emailSender = new FakeEmailSender();
-        var dispatcher = CreateDispatcher(db, repo, emailSender);
+        var factory = new FakeEmailProviderFactory();
+        var dispatcher = CreateDispatcher(db, repo, factory);
 
         await dispatcher.DispatchPendingCampaignsAsync();
 
-        Assert.Empty(emailSender.SentEmails);
+        Assert.Empty(factory.SentEmails);
     }
 
     private static NewsletterPlatformDbContext CreateDb()
@@ -133,13 +133,13 @@ public sealed class CampaignDispatcherTests
     private static CampaignDispatcher CreateDispatcher(
         NewsletterPlatformDbContext db,
         NewsletterRepository repo,
-        IEmailSender emailSender)
+        IEmailProviderFactory providerFactory)
     {
         return new CampaignDispatcher(
             db,
             repo,
             new UnitOfWork(db),
-            emailSender,
+            providerFactory,
             new SystemDateTimeProvider(),
             NullLogger<CampaignDispatcher>.Instance,
             Options.Create(new CampaignDispatchWorkerOptions { BatchSize = 50 }));
@@ -199,20 +199,32 @@ public sealed class CampaignDispatcherTests
         }
     }
 
-    private sealed class FakeEmailSender : IEmailSender
+    private sealed class FakeEmailProviderFactory : IEmailProviderFactory
     {
         private readonly HashSet<string> _failures = [];
         public List<(string To, string Subject)> SentEmails { get; } = [];
 
         public void SetFailureFor(string email) => _failures.Add(email);
 
-        public Task SendAsync(string to, string subject, string htmlBody, string? plainBody = null, CancellationToken ct = default)
-        {
-            if (_failures.Contains(to))
-                throw new InvalidOperationException($"Simulated failure for {to}");
+        public IEmailProvider Create(EmailProviderAccount account) => new FakeEmailProvider(this);
 
-            SentEmails.Add((to, subject));
-            return Task.CompletedTask;
+        private sealed class FakeEmailProvider : IEmailProvider
+        {
+            private readonly FakeEmailProviderFactory _factory;
+
+            public string ProviderName => "Fake";
+            public EmailProvider Provider => EmailProvider.Resend;
+
+            public FakeEmailProvider(FakeEmailProviderFactory factory) => _factory = factory;
+
+            public Task<SendEmailResult> SendAsync(ProviderEmailMessage message, CancellationToken ct = default)
+            {
+                if (_factory._failures.Contains(message.ToEmail))
+                    return Task.FromResult(new SendEmailResult(false, Error: "Simulated failure"));
+
+                _factory.SentEmails.Add((message.ToEmail, message.Subject));
+                return Task.FromResult(new SendEmailResult(true, ProviderMessageId: Guid.NewGuid().ToString("N")));
+            }
         }
     }
 

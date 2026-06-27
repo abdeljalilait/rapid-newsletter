@@ -1,4 +1,5 @@
 using NewsletterPlatform.Application.Common;
+using NewsletterPlatform.Domain.Entities;
 using NewsletterPlatform.Domain.Enums;
 
 namespace NewsletterPlatform.Application.Interfaces;
@@ -40,7 +41,7 @@ public sealed record SendEmailResult(bool Success, string? ProviderMessageId = n
 
 public interface IEmailProviderFactory
 {
-    IEmailProvider GetProvider(EmailProvider provider);
+    IEmailProvider Create(EmailProviderAccount account);
 }
 
 public interface ICurrentUserService

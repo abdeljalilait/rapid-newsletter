@@ -1,5 +1,6 @@
 using NewsletterPlatform.Application.Common;
 using NewsletterPlatform.Application.Interfaces;
+using NewsletterPlatform.Infrastructure.EmailProviders;
 using NewsletterPlatform.Infrastructure.Persistence;
 using NewsletterPlatform.Infrastructure.Persistence.Repositories;
 using NewsletterPlatform.Infrastructure.Services;
@@ -48,7 +49,10 @@ public static class DependencyInjection
         services.AddSingleton<ISecretProtector, AesSecretProtector>();
         services.AddScoped<IAuditLogger, AuditLogger>();
         services.AddScoped<IEmailSender, DevEmailSender>();
+        services.AddSingleton<IEmailProviderFactory, EmailProviderFactory>();
         services.AddScoped<ICampaignDispatcher, CampaignDispatcher>();
+
+        services.AddHttpClient();
 
         services.Configure<CampaignDispatchWorkerOptions>(configuration.GetSection(CampaignDispatchWorkerOptions.SectionName));
         services.AddHostedService<CampaignDispatchWorker>();

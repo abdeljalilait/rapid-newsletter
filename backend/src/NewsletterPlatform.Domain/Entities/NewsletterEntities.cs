@@ -191,6 +191,7 @@ public class EmailProviderAccount : BaseEntity
     public EmailProvider Provider { get; set; }
     public string AccountName { get; set; } = null!;
     public string EncryptedApiKey { get; set; } = null!;
+    public string EncryptedApiSecret { get; set; } = string.Empty;
     public string FromName { get; set; } = null!;
     public string FromEmail { get; set; } = null!;
     public string? SendingDomain { get; set; }

@@ -5,6 +5,7 @@ export interface ProviderAccountRequest {
   provider: EmailProvider;
   accountName: string;
   apiKey: string;
+  apiSecret?: string | null;
   fromName: string;
   fromEmail: string;
   sendingDomain?: string | null;

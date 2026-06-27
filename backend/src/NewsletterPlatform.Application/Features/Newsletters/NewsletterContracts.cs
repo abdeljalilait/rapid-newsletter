@@ -16,7 +16,7 @@ public sealed record ImportSubscribersRequest(IReadOnlyList<ImportSubscriberRow>
 public sealed record ImportSummaryDto(int RowsUploaded, int Imported, int Duplicates, int Invalid, int Skipped);
 public sealed record PlanRequest(string Name, string? Description, decimal Price, string Currency, BillingInterval BillingInterval, string? DodoProductId, IReadOnlyList<string>? Benefits, bool IsActive, int SortOrder);
 public sealed record PaymentConfigurationRequest(string ApiKey, string WebhookSecret, PaymentEnvironment Environment);
-public sealed record ProviderAccountRequest(EmailProvider Provider, string AccountName, string ApiKey, string FromName, string FromEmail, string? SendingDomain, int? DailyLimit, int? MonthlyLimit, int RatePerMinute, bool Enabled);
+public sealed record ProviderAccountRequest(EmailProvider Provider, string AccountName, string ApiKey, string? ApiSecret, string FromName, string FromEmail, string? SendingDomain, int? DailyLimit, int? MonthlyLimit, int RatePerMinute, bool Enabled);
 public sealed record PaymentWebhookRequest(string ProviderEventId, string EventType, JsonElement RawPayload);
 public sealed record PostRequest(string Title, string? Slug, string? Subtitle, string? PreviewText, string? CoverImageUrl, string EditorContentJson, string RenderedHtml, string PlainText, PostAudience Audience, PostStatus Status, bool PublishOnWebsite, bool SendByEmail, DateTime? ScheduledAt);
 public sealed record AudienceFilterDto(SubscriberStatus? Status = null, SubscriberAccessLevel? AccessLevel = null, IReadOnlyList<Guid>? TagIds = null, IReadOnlyList<Guid>? ListIds = null, DateTime? JoinedFrom = null, DateTime? JoinedTo = null);
@@ -57,9 +57,9 @@ public sealed record PaymentConfigurationDto(Guid Id, PaymentEnvironment Environ
     public static PaymentConfigurationDto From(WorkspacePaymentConfiguration x) => new(x.Id, x.Environment, x.ConnectionStatus, x.LastValidatedAt, true, true);
 }
 
-public sealed record ProviderAccountDto(Guid Id, EmailProvider Provider, string AccountName, string FromName, string FromEmail, string? SendingDomain, int? DailyLimit, int? MonthlyLimit, int RatePerMinute, bool Enabled, ProviderHealthStatus HealthStatus, DateTime? LastValidatedAt, DateTime? LastSuccessfulSendAt, string? LastError, bool HasApiKey)
+public sealed record ProviderAccountDto(Guid Id, EmailProvider Provider, string AccountName, string FromName, string FromEmail, string? SendingDomain, int? DailyLimit, int? MonthlyLimit, int RatePerMinute, bool Enabled, ProviderHealthStatus HealthStatus, DateTime? LastValidatedAt, DateTime? LastSuccessfulSendAt, string? LastError, bool HasApiKey, bool HasApiSecret)
 {
-    public static ProviderAccountDto From(EmailProviderAccount x) => new(x.Id, x.Provider, x.AccountName, x.FromName, x.FromEmail, x.SendingDomain, x.DailyLimit, x.MonthlyLimit, x.RatePerMinute, x.Enabled, x.HealthStatus, x.LastValidatedAt, x.LastSuccessfulSendAt, x.LastError, true);
+    public static ProviderAccountDto From(EmailProviderAccount x) => new(x.Id, x.Provider, x.AccountName, x.FromName, x.FromEmail, x.SendingDomain, x.DailyLimit, x.MonthlyLimit, x.RatePerMinute, x.Enabled, x.HealthStatus, x.LastValidatedAt, x.LastSuccessfulSendAt, x.LastError, !string.IsNullOrEmpty(x.EncryptedApiKey), !string.IsNullOrEmpty(x.EncryptedApiSecret));
 }
 
 public sealed record PostDto(Guid Id, string Title, string Slug, string? Subtitle, string? PreviewText, string? CoverImageUrl, PostAudience Audience, PostStatus Status, bool PublishOnWebsite, bool SendByEmail, DateTime? ScheduledAt, DateTime? PublishedAt)

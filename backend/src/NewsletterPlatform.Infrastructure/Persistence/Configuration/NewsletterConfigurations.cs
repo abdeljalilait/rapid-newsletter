@@ -234,6 +234,7 @@ public class EmailProviderAccountConfiguration : IEntityTypeConfiguration<EmailP
         builder.Property(x => x.Provider).HasConversion<int>().IsRequired();
         builder.Property(x => x.AccountName).HasMaxLength(160).IsRequired();
         builder.Property(x => x.EncryptedApiKey).IsRequired();
+        builder.Property(x => x.EncryptedApiSecret).IsRequired();
         builder.Property(x => x.FromName).HasMaxLength(120).IsRequired();
         builder.Property(x => x.FromEmail).HasMaxLength(256).IsRequired();
         builder.Property(x => x.SendingDomain).HasMaxLength(256);

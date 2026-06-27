@@ -24,6 +24,7 @@ public sealed partial class NewsletterRepository
             Provider = request.Provider,
             AccountName = request.AccountName.Trim(),
             EncryptedApiKey = _protector.Protect(request.ApiKey),
+            EncryptedApiSecret = string.IsNullOrEmpty(request.ApiSecret) ? string.Empty : _protector.Protect(request.ApiSecret),
             FromName = request.FromName.Trim(),
             FromEmail = NormalizeEmail(request.FromEmail),
             SendingDomain = request.SendingDomain,

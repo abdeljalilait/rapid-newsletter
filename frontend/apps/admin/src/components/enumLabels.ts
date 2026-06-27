@@ -63,7 +63,13 @@ export const campaignStatusLabels = {
 
 export const providerLabels = {
   [EmailProvider.Resend]: "Resend",
-  [EmailProvider.Mailtrap]: "Mailtrap"
+  [EmailProvider.Mailtrap]: "Mailtrap",
+  [EmailProvider.Sender]: "Sender",
+  [EmailProvider.Brevo]: "Brevo",
+  [EmailProvider.Mailjet]: "Mailjet",
+  [EmailProvider.Mailgun]: "Mailgun",
+  [EmailProvider.Loops]: "Loops",
+  [EmailProvider.Smtp2Go]: "SMTP2GO"
 };
 
 export function enumOptions<T extends Record<number, string>>(labels: T) {

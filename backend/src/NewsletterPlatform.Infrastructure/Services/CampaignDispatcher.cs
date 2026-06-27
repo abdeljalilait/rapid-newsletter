@@ -15,7 +15,7 @@ public sealed class CampaignDispatcher : ICampaignDispatcher
     private readonly NewsletterPlatformDbContext _db;
     private readonly ICampaignRepository _campaigns;
     private readonly IUnitOfWork _uow;
-    private readonly IEmailSender _emailSender;
+    private readonly IEmailProviderFactory _providerFactory;
     private readonly IDateTimeProvider _dateTime;
     private readonly ILogger<CampaignDispatcher> _logger;
     private readonly CampaignDispatchWorkerOptions _options;
@@ -24,7 +24,7 @@ public sealed class CampaignDispatcher : ICampaignDispatcher
         NewsletterPlatformDbContext db,
         ICampaignRepository campaigns,
         IUnitOfWork uow,
-        IEmailSender emailSender,
+        IEmailProviderFactory providerFactory,
         IDateTimeProvider dateTime,
         ILogger<CampaignDispatcher> logger,
         IOptions<CampaignDispatchWorkerOptions> options)
@@ -32,7 +32,7 @@ public sealed class CampaignDispatcher : ICampaignDispatcher
         _db = db;
         _campaigns = campaigns;
         _uow = uow;
-        _emailSender = emailSender;
+        _providerFactory = providerFactory;
         _dateTime = dateTime;
         _logger = logger;
         _options = options.Value;
@@ -86,17 +86,32 @@ public sealed class CampaignDispatcher : ICampaignDispatcher
 
         var now = _dateTime.UtcNow;
         var failures = new List<Guid>();
+        var results = new Dictionary<Guid, SendEmailResult>();
 
         foreach (var recipient in batch.Recipients)
         {
             try
             {
-                await _emailSender.SendAsync(
+                var account = await _db.EmailProviderAccounts
+                    .FirstAsync(a => a.Id == recipient.ProviderAccountId && a.WorkspaceId == workspaceId, ct);
+
+                var provider = _providerFactory.Create(account);
+                var message = new ProviderEmailMessage(
+                    campaign.FromEmail,
+                    campaign.FromName,
                     recipient.Email,
                     campaign.Subject,
                     campaign.BodyHtml,
-                    campaign.PlainText,
-                    ct);
+                    campaign.PlainText);
+
+                var result = await provider.SendAsync(message, ct);
+                results[recipient.CampaignRecipientId] = result;
+
+                if (!result.Success)
+                {
+                    _logger.LogError("Failed to send campaign email to {Email} via {Provider}: {Error}", recipient.Email, provider.ProviderName, result.Error);
+                    failures.Add(recipient.CampaignRecipientId);
+                }
             }
             catch (Exception ex)
             {
@@ -115,12 +130,16 @@ public sealed class CampaignDispatcher : ICampaignDispatcher
             if (failures.Contains(recipient.Id))
             {
                 recipient.Status = CampaignRecipientStatus.Failed;
-                recipient.LastError = "Send failed";
+                recipient.LastError = results.TryGetValue(recipient.Id, out var failedResult)
+                    ? (failedResult.Error ?? "Send failed")
+                    : "Send failed";
             }
             else
             {
                 recipient.Status = CampaignRecipientStatus.Sent;
                 recipient.LastAttemptAt = now;
+                if (results.TryGetValue(recipient.Id, out var sentResult))
+                    recipient.ProviderMessageId = sentResult.ProviderMessageId;
             }
             recipient.UpdatedAt = now;
         }
