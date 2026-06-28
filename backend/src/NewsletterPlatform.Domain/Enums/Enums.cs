@@ -126,12 +126,9 @@ public enum EmailProvider
 {
     Resend = 0,
     Mailtrap = 1,
-    Sender = 2,
-    Brevo = 3,
-    Mailjet = 4,
-    Mailgun = 5,
-    Loops = 6,
-    Smtp2Go = 7
+    MailerSend = 8,
+    Plunk = 9,
+    AmazonSes = 10
 }
 
 public enum ProviderHealthStatus

@@ -5,9 +5,9 @@ import { getWorkspace } from "../../lib/api";
 const slug = Astro.params.slug!;
 const workspace = await getWorkspace(slug);
 ---
-<BaseLayout title={`Unsubscribe · ${workspace.name}`}>
+<BaseLayout title={`Unsubscribe · ${workspace?.name}`}>
   <main class="container" style="padding: 56px 0; max-width: 680px;">
-    <h1>Unsubscribe from {workspace.name}</h1>
+    <h1>Unsubscribe from {workspace?.name}</h1>
     <p class="muted">Enter your email address to stop receiving this newsletter.</p>
     <form class="subscribe-form" data-unsubscribe-form data-slug={slug} style="margin-top: 24px;">
       <input name="email" type="email" required placeholder="reader@example.com" aria-label="Email" />

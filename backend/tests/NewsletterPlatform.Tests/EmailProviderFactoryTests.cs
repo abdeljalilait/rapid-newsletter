@@ -11,12 +11,9 @@ public sealed class EmailProviderFactoryTests
 {
     [Theory]
     [InlineData(EmailProvider.Resend, typeof(ResendEmailProvider))]
-    [InlineData(EmailProvider.Sender, typeof(SenderEmailProvider))]
-    [InlineData(EmailProvider.Brevo, typeof(BrevoEmailProvider))]
-    [InlineData(EmailProvider.Mailjet, typeof(MailjetEmailProvider))]
-    [InlineData(EmailProvider.Mailgun, typeof(MailgunEmailProvider))]
-    [InlineData(EmailProvider.Loops, typeof(LoopsEmailProvider))]
-    [InlineData(EmailProvider.Smtp2Go, typeof(Smtp2GoEmailProvider))]
+    [InlineData(EmailProvider.MailerSend, typeof(MailerSendEmailProvider))]
+    [InlineData(EmailProvider.Plunk, typeof(PlunkEmailProvider))]
+    [InlineData(EmailProvider.AmazonSes, typeof(AmazonSesEmailProvider))]
     [InlineData(EmailProvider.Mailtrap, typeof(DevEmailProvider))]
     public void Create_ReturnsCorrectProviderType(EmailProvider provider, Type expectedType)
     {
@@ -25,8 +22,8 @@ public sealed class EmailProviderFactoryTests
         {
             Provider = provider,
             EncryptedApiKey = "protected:key",
-            EncryptedApiSecret = provider == EmailProvider.Mailjet ? "protected:secret" : string.Empty,
-            SendingDomain = provider is EmailProvider.Mailgun or EmailProvider.Loops ? "example.com" : null
+            EncryptedApiSecret = provider == EmailProvider.AmazonSes ? "protected:secret" : string.Empty,
+            SendingDomain = provider == EmailProvider.AmazonSes ? "us-east-1" : null
         };
 
         var instance = factory.Create(account);

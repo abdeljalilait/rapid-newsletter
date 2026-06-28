@@ -1,0 +1,30 @@
+# syntax=docker/dockerfile:1
+
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS restore
+WORKDIR /src
+
+COPY backend/Directory.Packages.props backend/NewsletterPlatform.sln backend/nuget.config ./backend/
+COPY backend/src/NewsletterPlatform.Api/NewsletterPlatform.Api.csproj ./backend/src/NewsletterPlatform.Api/
+COPY backend/src/NewsletterPlatform.Application/NewsletterPlatform.Application.csproj ./backend/src/NewsletterPlatform.Application/
+COPY backend/src/NewsletterPlatform.Domain/NewsletterPlatform.Domain.csproj ./backend/src/NewsletterPlatform.Domain/
+COPY backend/src/NewsletterPlatform.Infrastructure/NewsletterPlatform.Infrastructure.csproj ./backend/src/NewsletterPlatform.Infrastructure/
+RUN dotnet restore backend/src/NewsletterPlatform.Api/NewsletterPlatform.Api.csproj --configfile backend/nuget.config
+
+FROM restore AS publish
+COPY backend ./backend
+RUN dotnet publish backend/src/NewsletterPlatform.Api/NewsletterPlatform.Api.csproj \
+    --configuration Release \
+    --output /app/publish \
+    --no-restore \
+    /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+WORKDIR /app
+
+ENV ASPNETCORE_URLS=http://+:8080 \
+    DOTNET_RUNNING_IN_CONTAINER=true
+
+EXPOSE 8080
+
+COPY --from=publish /app/publish ./
+ENTRYPOINT ["dotnet", "NewsletterPlatform.Api.dll"]

@@ -1,6 +1,7 @@
 using MediatR;
 using NewsletterPlatform.Application.Interfaces;
 using NewsletterPlatform.Domain.Enums;
+using FluentValidation.Results;
 
 namespace NewsletterPlatform.Application.Features.Newsletters.Providers;
 
@@ -54,10 +55,23 @@ internal sealed class CreateProviderAccountHandler : IRequestHandler<CreateProvi
         if (!await _auth.HasWorkspaceRoleAsync(_current.UserId.Value, request.WorkspaceId, WorkspaceRole.Admin, ct))
             throw new Exceptions.ForbiddenException("You do not have permission to manage provider accounts.");
 
+        if (!IsSupportedProvider(request.Request.Provider))
+            throw new Exceptions.ValidationException(new[]
+            {
+                new ValidationFailure(nameof(request.Request.Provider), "This email provider is not supported.")
+            });
+
         var result = await _providers.CreateProviderAccountAsync(request.WorkspaceId, request.Request, ct);
         await _uow.SaveChangesAsync(ct);
         return result;
     }
+
+    private static bool IsSupportedProvider(EmailProvider provider) =>
+        provider is EmailProvider.Resend
+            or EmailProvider.Mailtrap
+            or EmailProvider.MailerSend
+            or EmailProvider.Plunk
+            or EmailProvider.AmazonSes;
 }
 
 internal sealed class ValidateProviderAccountHandler : IRequestHandler<ValidateProviderAccountCommand, ProviderAccountDto?>

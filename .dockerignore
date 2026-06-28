@@ -1,0 +1,16 @@
+.git
+.agents
+.codex
+**/bin
+**/obj
+**/node_modules
+**/dist
+**/.astro
+**/.turbo
+**/.vite
+**/coverage
+**/TestResults
+*.user
+*.suo
+*.swp
+.DS_Store

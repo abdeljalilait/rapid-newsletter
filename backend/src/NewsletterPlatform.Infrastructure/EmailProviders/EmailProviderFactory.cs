@@ -31,12 +31,12 @@ public sealed class EmailProviderFactory : IEmailProviderFactory
         return account.Provider switch
         {
             EmailProvider.Resend => new ResendEmailProvider(apiKey),
-            EmailProvider.Sender => new SenderEmailProvider(_httpClientFactory.CreateClient(), apiKey),
-            EmailProvider.Brevo => new BrevoEmailProvider(apiKey),
-            EmailProvider.Mailjet => new MailjetEmailProvider(apiKey, apiSecret ?? throw new InvalidOperationException("Mailjet requires an API secret.")),
-            EmailProvider.Mailgun => new MailgunEmailProvider(_httpClientFactory.CreateClient(), apiKey, account.SendingDomain ?? throw new InvalidOperationException("Mailgun requires a sending domain.")),
-            EmailProvider.Loops => new LoopsEmailProvider(_httpClientFactory.CreateClient(), apiKey, account.SendingDomain ?? throw new InvalidOperationException("Loops requires a transactional email ID in SendingDomain.")),
-            EmailProvider.Smtp2Go => new Smtp2GoEmailProvider(apiKey),
+            EmailProvider.MailerSend => new MailerSendEmailProvider(_httpClientFactory.CreateClient(), apiKey),
+            EmailProvider.Plunk => new PlunkEmailProvider(_httpClientFactory.CreateClient(), apiKey),
+            EmailProvider.AmazonSes => new AmazonSesEmailProvider(
+                apiKey,
+                apiSecret ?? throw new InvalidOperationException("Amazon SES requires an API secret."),
+                account.SendingDomain ?? throw new InvalidOperationException("Amazon SES requires an AWS region in SendingDomain.")),
             EmailProvider.Mailtrap => new DevEmailProvider(_loggerFactory.CreateLogger<DevEmailProvider>()),
             _ => throw new NotSupportedException($"Email provider '{account.Provider}' is not supported.")
         };
